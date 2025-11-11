@@ -19,6 +19,13 @@ class City:
         self.power = 0.0  # Recurso
         self.font = pygame.font.Font(None, 24) # Texto da cidade
         
+
+    def is_enemy(self):
+        return self.owner == 'enemy' 
+
+    def is_player(self):
+        return self.owner == 'player' 
+
     def update(self):
         # Lógica in-game
         if self.owner == 'neutral' and self.power >= 100:
@@ -51,3 +58,9 @@ class City:
         mouse_x, mouse_y = mouse_pos
         distance = math.sqrt((self.x - mouse_x)**2 + (self.y - mouse_y)**2)
         return distance <= self.radius
+
+
+        
+
+
+    
