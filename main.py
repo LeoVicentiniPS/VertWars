@@ -2,6 +2,7 @@ import pygame
 import random
 from city import City
 from troop import TroopGroup 
+from graph import Graph
 
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
@@ -24,9 +25,6 @@ pygame.time.set_timer(ENEMYACTION, 2000)
 enemy = City(800, 700, 'enemy')
 player = City(100, 100, 'player')
 
-
-
-
 # Listas
 cities = [
     player,
@@ -38,22 +36,8 @@ cities = [
     enemy,
 ]
 
-def conquest(cities: list, troop_groups: list):
-    print("a")
-        #nearest_city = cities[0]
-        #new_troop = TroopGroup(nearest_city, enemy)
-        #troop_groups.append(new_troop)
 
-# Criar grafo com ligando todos os pontos 
-# Arestas vão ter peso distancia entre os pontos
-# Remove o player e cria arvore geradora minima
-# Faz caminhos conforme as arestas da arvore mínima
-#
-#
-#
-#
-#
-#
+        
 
 
 selected_city = None
@@ -80,7 +64,9 @@ while running:
             running = False
 
         if event.type == ENEMYACTION:
-            conquest(cities, troop_groups)
+            enemy_city, target_city = enemy.conquest(cities)
+            new_troop = TroopGroup(cities[enemy_city], cities[target_city])
+            troop_groups.append(new_troop)
             
 
         if event.type == pygame.MOUSEBUTTONDOWN:

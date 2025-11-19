@@ -1,6 +1,8 @@
 import pygame
 import math
-from city import COLOR_PLAYER, COLOR_ENEMY 
+
+COLOR_PLAYER = (50, 255, 50) 
+COLOR_ENEMY = (255, 50, 50)   
 
 TROOP_SPEED = 2
 
