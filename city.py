@@ -18,12 +18,19 @@ class City:
         self.y = y
         self.radius = 20  # Tamanho da cidade
         self.owner = owner  # player, enemy, ou 'neutral'
+        self.og_owner = owner
         self.power = 0.0  # Recurso
         self.font = pygame.font.Font(None, 24) # Texto da cidade
         self.roads = []
         self.allies = []
         self.graph = None
-        
+
+    def reset(self):
+        self.owner = self.og_owner
+        self.power = 0.0
+        self.roads = []
+        self.allies = []
+        self.graph = None
 
     def is_enemy(self):
         return self.owner == 'enemy' 
