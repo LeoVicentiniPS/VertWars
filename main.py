@@ -2,24 +2,30 @@ import pygame
 import random
 from city import City
 from troop import TroopGroup 
-from graph import Graph
 
+#global variables
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
-
-COLOR_WHITE = (0, 0, 0)
+COLOR_GREEN = (0, 225, 0)
+COLOR_RED = (225, 0, 0)
+COLOR_WHITE= (225, 225, 225)
 GAME_TITLE = "VertWars"
 FPS = 60
 
 
-# Inicialização
+#init
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption(GAME_TITLE)
 clock = pygame.time.Clock()
 
-bg = pygame.image.load("background.jpg")
+#set background
+bg = pygame.image.load("images/background.jpg")
+go_bg = pygame.image.load("images/go_background.jpg")
+win_bg = pygame.image.load("images/win_background.png")
 
+
+#set events
 ENEMYACTION = pygame.USEREVENT + 1
 WIN = pygame.USEREVENT + 3
 LOSE = pygame.USEREVENT + 4
@@ -29,7 +35,10 @@ enemy = City(800, 700, 'enemy')
 player = City(100, 100, 'player')
 lvl = 0
 
-# Listas
+#game variables
+running = True
+selected_city = None
+troop_groups = []
 cities = [
     player,
     City(random.randint(150, 750), random.randint(150, 650), 'neutral'),
@@ -40,16 +49,18 @@ cities = [
     enemy,
 ]
 
-
-
-selected_city = None
-troop_groups = []
-running = True
-
-def show_go_screen(win):
-    screen.blit(bg, (0, 0))
-    text_surface = pygame.font.Font(None, 24).render("Press space bar to play again" if not win else "Press space bar to next lvl", True, COLOR_WHITE)
-    screen.blit(text_surface, (SCREEN_WIDTH / 2, SCREEN_HEIGHT * 7 / 8))
+def show_end_lvl_screen(win):
+    global lvl
+    global running
+    global player
+    global enemy
+    global cities
+    global troop_groups
+    screen.blit(pygame.transform.scale(go_bg if not win else win_bg, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
+    title = pygame.font.Font(None, 48).render("GAME OVER" if not win else "YOU WIN", True, COLOR_WHITE)
+    description = pygame.font.Font(None, 24).render("Press space bar to play again" if not win else "Press space bar to next lvl", True, COLOR_WHITE)
+    screen.blit(title, ((SCREEN_WIDTH / 2)-50, (SCREEN_HEIGHT / 2)-50))
+    screen.blit(description, ((SCREEN_WIDTH / 2)-90, SCREEN_HEIGHT / 2))
     pygame.display.flip()
     done = False
     running = True
@@ -64,15 +75,14 @@ def show_go_screen(win):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if(win): lvl += 1
+                    troop_groups = []
                     cities = [
                         player,
                         *[City(random.randint(150, 750), random.randint(150, 650), 'neutral') for i in range (5+lvl)],
                         enemy,
                     ]
                     done = True
-
         clock.tick(FPS)
-    return running
 
 
 # Game Loop
@@ -92,10 +102,10 @@ while running:
             running = False
 
         if event.type == WIN:
-            show_go_screen(True)
+            show_end_lvl_screen(True)
 
         if event.type == LOSE:
-            show_go_screen(False)
+            show_end_lvl_screen(False)
 
         if event.type == ENEMYACTION:
             enemy_city, target_city = enemy.conquest(cities)
@@ -137,9 +147,8 @@ while running:
         
     troop_groups = [troop for troop in troop_groups if troop.is_alive]
 
-
     # Draws
-    screen.blit(bg, (0, 0))
+    screen.blit(pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
 
     for city in cities:
         is_selected = (city == selected_city)
@@ -148,9 +157,10 @@ while running:
     for troop in troop_groups:
         troop.draw(screen)
 
-    # Coisa pra funcionar
+    #fps tick for game loop
     pygame.display.flip()
     clock.tick(FPS)
 
 
 pygame.quit()
+
