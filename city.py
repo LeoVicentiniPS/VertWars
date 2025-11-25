@@ -31,6 +31,7 @@ class City:
         self.roads = []
         self.allies = []
         self.graph = None
+        self.attack_timer = random.randint(300, 1000)
         self.update_image()
 
     def update_image(self):
@@ -53,6 +54,7 @@ class City:
         self.roads = []
         self.allies = []
         self.graph = None
+        self.update_image()
 
     def is_enemy(self):
         return self.owner == 'enemy' 
@@ -65,7 +67,7 @@ class City:
         if self.owner == 'neutral' and self.power >= 100:
             self.power = 100
         else:
-            growth_rate = 0.02 if self.owner == 'neutral' else 0.1
+            growth_rate = 0.02 if self.owner == 'neutral' else 0.04
             self.power += growth_rate
 
     def draw(self, screen, is_selected):
@@ -106,29 +108,62 @@ class City:
         return distance <= self.radius
 
     def _get_next_node(self, tupl):
-        return True if tupl not in self.roads and (tupl[0] in self.allies or tupl[1] in self.allies) else False 
+        u, v, w = tupl #origem, destino e peso
+        u_is_ally = u in self.allies
+        v_is_ally = v in self.allies
 
+        is_frontier = (u_is_ally and not v_is_ally) or (v_is_ally and not u_is_ally)
+        return is_frontier
+
+    def attempt_random_attack(self, roads):
+    
+        self.attack_timer -= 1
+        if self.attack_timer > 0:
+            return None
+            
+        #Tempo de ataque aleatório
+        self.attack_timer = random.randint(300, 1000)
+        if self.power < 20:
+            return None
+            
+        #Acha os vértices conectados e retorna um aleatório
+        neighbors = []
+        for start, end in roads:
+            if start == self:
+                neighbors.append(end)
+            elif end == self:
+                neighbors.append(start)
+                
+        if neighbors:
+            return random.choice(neighbors)
+            
+        return None
+    
     def conquest(self, cities):
-        cities_copy = [*cities]
+
+        self.allies = [cities.index(c) for c in cities if c.owner == self.owner]
+        self.graph = Graph(cities)
+        mst = self.graph.prim_mst()
+
+        next_route_node = next(filter(self._get_next_node, mst), None)
+
+        if next_route_node:
+            u, v, weight = next_route_node
+
+            if u in self.allies:
+                source_idx = u
+                target_idx = v
+            else:
+                source_idx = v
+                target_idx = u
+
+            if cities[source_idx].power > 10:
+                self.roads.append(next_route_node)
+                return (source_idx, target_idx)
+
+            return (0, 0) #retorna nada esperando ter 10 de poder
         
-        cities_not_conquered = [city for city in cities_copy if city.owner != self.owner]
-        
-        if (len(cities_not_conquered)>1):
-            cities_copy.pop(0)
-            self.allies = [cities_copy.index(city) for city in cities_copy if city.owner == self.owner]
-            if (self.graph == None):
-                self.graph = Graph(cities_copy)
-            mst = self.graph.prim_mst()
-            self.roads = [road for road in mst if road[0] in self.allies and road[1] in self.allies ]
-            next_route_node = next(filter(self._get_next_node, mst), None)
-            nearest_city = next_route_node[0] if next_route_node[0] in self.allies else next_route_node[1]
-            target_city = next_route_node[0] if nearest_city == next_route_node[1] else next_route_node[1]
-            return (nearest_city+1, target_city+1)
-        else:
-            player_city = cities_copy.pop(0)
-            distances = [math.sqrt((player_city.x - city.x)**2 + (player_city.y - city.y)**2) for city in cities_copy]
-            min_distance = min(distances)
-            return (distances.index(min_distance), 0)
+        return (0,0)
         
 
 

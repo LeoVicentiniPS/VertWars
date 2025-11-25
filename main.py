@@ -33,6 +33,8 @@ WIN = pygame.USEREVENT + 3
 LOSE = pygame.USEREVENT + 4
 pygame.time.set_timer(ENEMYACTION, 2000)
 
+last_main_source_idx = -1 # Para saber qual cidade está com MST
+
 enemy = City(800, 700, 'enemy')
 player = City(100, 100, 'player')
 lvl = 0
@@ -160,12 +162,21 @@ while running:
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
+        #IA do inimigo
         if event.type == ENEMYACTION:
-            enemy_city, target_city = enemy.conquest(cities)
-            new_troop = TroopGroup(cities[enemy_city], cities[target_city])
-            troop_groups.append(new_troop)
-            
+            source_idx, target_idx = enemy.conquest(cities)
+            # Garante que os índices são válidos e diferentes 
+            if source_idx != target_idx and source_idx < len(cities) and target_idx < len(cities):
 
+                last_main_source_idx = source_idx #Cidade principal
+                source_city = cities[source_idx]
+                target_city = cities[target_idx]
+
+                if source_city.power > 10:
+                    new_troop = TroopGroup(source_city, target_city)
+                    troop_groups.append(new_troop)
+
+        #Player            
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             clicked_city = None
@@ -194,7 +205,12 @@ while running:
     # Updates
     for city in cities:
         city.update()
-
+        if city.owner == 'enemy' and cities.index(city) != last_main_source_idx:
+            target = city.attempt_random_attack(roads)
+            if target:
+                new_troop = TroopGroup(city, target)
+                troop_groups.append(new_troop)
+                
     for troop in troop_groups:
         troop.update()
         
