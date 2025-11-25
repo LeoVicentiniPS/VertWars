@@ -52,6 +52,7 @@ class TroopGroup:
             if self.target.power < 0:
                 self.target.owner = self.owner
                 self.target.power = abs(self.target.power)
+                self.target.update_image()
 
     def draw(self, screen):
         color = COLOR_PLAYER if self.owner == 'player' else COLOR_ENEMY  

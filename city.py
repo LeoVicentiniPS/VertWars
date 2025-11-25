@@ -3,7 +3,7 @@ import math
 import random
 from graph import Graph
 
-pygame.font.init
+pygame.font.init()
 
 COLOR_PLAYER = (50, 255, 50)  
 COLOR_NEUTRAL = (150, 150, 150)
@@ -17,6 +17,7 @@ cities_image = [
     pygame.image.load("images/city_3.png"),
     pygame.image.load("images/city_4.png")
 ]
+skyland = pygame.image.load("images/skyland.png")
 
 class City:
     def __init__(self, x, y, owner):
@@ -30,7 +31,21 @@ class City:
         self.roads = []
         self.allies = []
         self.graph = None
-        self.image = pygame.transform.scale(cities_image[random.randint(0, 3)], (self.radius*6, self.radius*6))
+        self.update_image()
+
+    def update_image(self):
+        # Default index
+        img_idx = 0 
+        
+        if self.owner == 'player':
+            img_idx = 3  
+        elif self.owner == 'enemy':
+            img_idx = 0  
+        else:
+            img_idx = random.randint(1, 2)
+            
+        self.image = pygame.transform.scale(cities_image[img_idx], (self.radius*6, self.radius*6))
+        self.land = pygame.transform.scale(skyland, (self.radius*6, self.radius*6))
 
     def reset(self):
         self.owner = self.og_owner
@@ -63,6 +78,8 @@ class City:
 
         #castle image
         castle_center = (self.x-self.radius*3, self.y-self.radius*3)
+        land_center = (self.x-self.radius*3, self.y-self.radius*1)
+        screen.blit(self.land, land_center)
         screen.blit(self.image, castle_center)
         
         #circle
@@ -111,7 +128,7 @@ class City:
             player_city = cities_copy.pop(0)
             distances = [math.sqrt((player_city.x - city.x)**2 + (player_city.y - city.y)**2) for city in cities_copy]
             min_distance = min(distances)
-            return (distances.index(min_distance)+1, 0)
+            return (distances.index(min_distance), 0)
         
 
 
