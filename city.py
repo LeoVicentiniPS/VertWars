@@ -1,7 +1,7 @@
 import pygame
 import math
+import random
 from graph import Graph
-from troop import TroopGroup
 
 pygame.font.init
 
@@ -11,6 +11,12 @@ COLOR_ENEMY = (255, 50, 50)
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 
+cities_image = [
+    pygame.image.load("images/city_1.png"),
+    pygame.image.load("images/city_2.png"),
+    pygame.image.load("images/city_3.png"),
+    pygame.image.load("images/city_4.png")
+]
 
 class City:
     def __init__(self, x, y, owner):
@@ -24,6 +30,7 @@ class City:
         self.roads = []
         self.allies = []
         self.graph = None
+        self.image = pygame.transform.scale(cities_image[random.randint(0, 3)], (self.radius*6, self.radius*6))
 
     def reset(self):
         self.owner = self.og_owner
@@ -53,9 +60,20 @@ class City:
             color = COLOR_ENEMY
         else:
             color = COLOR_NEUTRAL
-            
-        pygame.draw.circle(screen, color, (self.x, self.y), self.radius)
+
+        #castle image
+        castle_center = (self.x-self.radius*3, self.y-self.radius*3)
+        screen.blit(self.image, castle_center)
         
+        #circle
+        circle_center = (self.x-self.radius, self.y-self.radius)
+        circle_surface = pygame.Surface((self.radius*2, self.radius*2))
+        circle_surface.set_colorkey(COLOR_BLACK)
+        circle_surface.set_alpha(180)
+        pygame.draw.circle(circle_surface, color, (self.radius, self.radius), self.radius) 
+        screen.blit(circle_surface, circle_center)
+        
+        #power text
         text_surface = self.font.render(str(int(self.power)), True, COLOR_BLACK)
         text_rect = text_surface.get_rect()
         text_rect.center = (self.x, self.y)
